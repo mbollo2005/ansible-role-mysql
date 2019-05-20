@@ -1,0 +1,28 @@
+---
+# tasks file for mysql_db
+
+ - name: Confirm MySQL root password before installing
+   debconf: name='mysql-server' question='mysql-server/root_password_again' value='{{db_root_password | quote}}' vtype='password'
+   become: true
+
+ - name: install MYSQL databases
+   yum:  name={{ item }} state=installed
+   with_items:
+     - mysql-server
+     - mysql-client
+
+ - name: Start Mysql Service
+   service:
+     name: mysql
+     state: started
+     enabled: yes
+
+ - name: Create Application database
+   mysql_db: name={{db_name}} state=present
+ - name: Create a Db user
+   mysql_user:
+     name: "{{db_user}}"
+     password: "{{db_user_password}}"
+     priv: '*.*:ALL'
+     state: present
+     host: '%'
